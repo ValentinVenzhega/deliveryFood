@@ -2,6 +2,15 @@
 
 import Swiper from 'https://unpkg.com/swiper/swiper-bundle.esm.browser.min.js'
 
+
+const swiper = new Swiper('.swiper-container', {
+	sliderPerView: 1,
+	loop: true,
+	autoplay: true,
+	effect: 'coverflow',
+	grabCursor: true,
+});
+
 const RED_COLOR = '#ff0000';
 
 const cartButton = document.querySelector("#cart-button");
@@ -31,7 +40,18 @@ const buttonClearCart = document.querySelector('.clear-cart');
 
 let login = localStorage.getItem('gloDelivery');
 
-const cart = [];
+const cart = JSON.parse(localStorage.getItem(`gloDelivery_${login}`)) || [];
+
+function saveCart() {
+	localStorage.setItem(`gloDelivery_${login}`, JSON.stringify(cart));
+}
+
+function downloadCart() { 
+	if(localStorage.getItem(`gloDelivery_${login}`)) {
+		const data = JSON.parse(localStorage.getItem(`gloDelivery_${login}`));
+		cart.push(...data);
+	}
+}
 
 const getData = async function(url) {
 
@@ -77,6 +97,7 @@ function autorized() {
 
 	function logOut() {
 		login = null;
+		cart.length = 0;
 		localStorage.removeItem('gloDelivery');
 		buttonAuth.style.display = '';
 		userName.style.display = '';
@@ -103,6 +124,7 @@ function notAutorized() {
 			login = loginInput.value;
 			localStorage.setItem('gloDelivery', login);
 			toogleModalAuth();
+			downloadCart();
 			buttonAuth.removeEventListener('click', toogleModalAuth);
 			closeAuth.removeEventListener('click', toogleModalAuth);
 			logInForm.removeEventListener('submit', logIn);
@@ -199,6 +221,7 @@ function openGoods(event) {
 		if (restaurant) {
 			cardsMenu.textContent = '';
 			containerPromo.classList.add('hide');
+			swiper.destroy(false);
 			restaurants.classList.add('hide');
 			menu.classList.remove('hide');
 
@@ -245,6 +268,8 @@ function addToCart(event) {
 				count: 1
 			});
 		}
+
+		saveCart();
 	}
 }
 
@@ -271,7 +296,7 @@ const tottalPrice = cart.reduce(function(result, item) {
 }, 0);
 
 modalPrice.textContent = tottalPrice + ' ₽';
-
+saveCart();
 }
 
 function changeCount(event) {
@@ -307,6 +332,7 @@ function init() {
 	buttonClearCart.addEventListener('click', function() {
 		cart.length = 0;
 		renderCart();
+		toggleModal();
 	})
 
 	modalBody.addEventListener('click', changeCount);
@@ -318,6 +344,7 @@ function init() {
 	cardsRestaurants.addEventListener('click', openGoods);
 	logo.addEventListener('click', function () {
 		containerPromo.classList.remove('hide');
+		swiper.init();
 		restaurants.classList.remove('hide');
 		menu.classList.add('hide');
 	});
@@ -356,6 +383,7 @@ function init() {
 							})
 
 							containerPromo.classList.add('hide');
+							swiper.destroy(false);
 							restaurants.classList.add('hide');
 							menu.classList.remove('hide');
 
@@ -370,20 +398,7 @@ function init() {
 		};
 	});
 	
-	new Swiper('.swiper-container', {
-		sliderPerView: 1,
-		loop: true,
-		autoplay: true,
-		effect: 'cube',
-		grabCursor: true,
-		cubeEffect:{
-			shadow: false,
-		},
-		// pagination: {
-		// 	el: '.swiper-pagination',
-		// 	clickable: true
-		// }
-	});
+	
 }
 
 init();
